@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Warm neutral palette inspired by Thai travel design */
+    --background: 35 30% 94%;
+    --foreground: 25 10% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 10% 15%;
+
+    /* Dark brown primary - matches the login button */
+    --primary: 25 15% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 35 20% 90%;
+    --secondary-foreground: 25 10% 15%;
+
+    --muted: 35 15% 88%;
+    --muted-foreground: 25 8% 45%;
+
+    --accent: 35 20% 90%;
+    --accent-foreground: 25 10% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 35 15% 85%;
+    --input: 0 0% 100%;
+    --ring: 25 15% 28%;
+
+    --radius: 0.75rem;
+
+    /* Header gray */
+    --header: 0 0% 78%;
+    --header-foreground: 25 10% 15%;
+
+    /* Footer dark */
+    --footer: 25 8% 35%;
+    --footer-foreground: 35 20% 90%;
+
+    /* Stat card colors */
+    --stat-blue: 210 80% 55%;
+    --stat-green: 145 60% 45%;
+    --stat-orange: 30 90% 55%;
+    --stat-purple: 270 60% 55%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 25 15% 10%;
+    --foreground: 35 20% 95%;
+
+    --card: 25 12% 15%;
+    --card-foreground: 35 20% 95%;
+
+    --popover: 25 12% 15%;
+    --popover-foreground: 35 20% 95%;
+
+    --primary: 35 25% 75%;
+    --primary-foreground: 25 15% 10%;
+
+    --secondary: 25 10% 20%;
+    --secondary-foreground: 35 20% 95%;
+
+    --muted: 25 10% 20%;
+    --muted-foreground: 35 15% 60%;
+
+    --accent: 25 10% 20%;
+    --accent-foreground: 35 20% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 35 20% 95%;
+
+    --border: 25 10% 25%;
+    --input: 25 10% 20%;
+    --ring: 35 25% 75%;
+
+    --header: 25 10% 18%;
+    --header-foreground: 35 20% 95%;
+
+    --footer: 25 8% 12%;
+    --footer-foreground: 35 20% 90%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .auth-card {
+    @apply bg-card rounded-2xl shadow-lg p-8 w-full max-w-md;
+  }
+
+  .auth-input-wrapper {
+    @apply flex items-center bg-input border-2 border-border rounded-xl px-4 py-3 gap-3 transition-all duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20;
+  }
+
+  .auth-input {
+    @apply flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground;
+  }
+
+  .stat-card {
+    @apply bg-card rounded-2xl shadow-md p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .dashboard-card {
+    @apply bg-card rounded-2xl shadow-md p-6;
+  }
+
+  .social-button {
+    @apply w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-md;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
