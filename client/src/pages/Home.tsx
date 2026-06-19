@@ -187,20 +187,18 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="bg-custom-green py-8">
-          <div className="mx-auto grid max-w-6xl gap-4 px-4 md:grid-cols-3">
-            {[
-              { icon: MapPin, title: "รายละเอียดสถานที่", text: "รูปภาพ เวลาเปิดปิด แผนที่ รีวิว และจำนวน Favorite อยู่ในหน้ารายละเอียดเดียว" },
-              { icon: CalendarCheck, title: "จองจากรอบว่างจริง", text: "แพ็กเกจผูกกับ schedule เพื่อดูจำนวนที่นั่งคงเหลือก่อนจอง" },
-              { icon: ShieldCheck, title: "Admin ตรวจชำระ", text: "Booking และ Payment อยู่ด้วยกัน ทำให้ตรวจสลิปและยืนยันสถานะได้เร็วขึ้น" },
-            ].map((item) => (
-              <div key={item.title} className="rounded-lg bg-card p-5 shadow-sm">
-                <item.icon className="h-6 w-6 text-primary" />
-                <h2 className="mt-4 font-extrabold">{item.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
-              </div>
-            ))}
-          </div>
+        <section className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:grid-cols-3 bg-white">
+          {[
+            { icon: MapPin, title: "รายละเอียดสถานที่", text: "รูปภาพ เวลาเปิดปิด แผนที่ รีวิว และจำนวน Favorite อยู่ในหน้ารายละเอียดเดียว" },
+            { icon: CalendarCheck, title: "จองจากรอบว่างจริง", text: "แพ็กเกจผูกกับ schedule เพื่อดูจำนวนที่นั่งคงเหลือก่อนจอง" },
+            { icon: ShieldCheck, title: "Admin ตรวจชำระ", text: "Booking และ Payment อยู่ด้วยกัน ทำให้ตรวจสลิปและยืนยันสถานะได้เร็วขึ้น" },
+          ].map((item) => (
+            <div key={item.title} className="rounded-lg bg-card p-5 shadow-sm">
+              <item.icon className="h-6 w-6 text-primary" />
+              <h2 className="mt-4 font-extrabold">{item.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
+            </div>
+          ))}
         </section>
 
         <section className="bg-amber-section px-4 py-12">
@@ -252,7 +250,7 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="bg-custom-green px-4 py-12">
+        <section className="px-4 py-12">
           <div className="mx-auto max-w-6xl">
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
@@ -260,7 +258,7 @@ const Home = () => {
                 <h2 className="text-2xl font-extrabold">แพ็กเกจยอดนิยม</h2>
                 <p className="mt-1 text-sm text-muted-foreground">เรียงจากจำนวน booking มากสุดในระบบ</p>
               </div>
-              <Link to="/booking" className="flex items-center gap-2 text-sm font-bold text-white hover:underline">
+              <Link to="/booking" className="flex items-center gap-2 text-sm font-bold text-primary hover:underline">
                 ไปจอง <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
