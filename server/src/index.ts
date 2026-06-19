@@ -63,7 +63,7 @@ class App {
     const routePath = path.resolve(__dirname, "routes");
     const routeFiles = fs
       .readdirSync(routePath)
-      .filter((file) => file.endsWith(".ts"));
+      .filter((file) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts"));
 
     for (const file of routeFiles) {
       try {
