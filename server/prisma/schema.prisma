@@ -11,11 +11,188 @@ model users {
   user_id       Int      @id @default(autoincrement())
   username      String?  @db.VarChar(255)
   password      String?  @db.VarChar(255)
-  name          String?  @db.VarChar(255)
-  lastname      String?  @db.VarChar(255)
   email         String?  @db.VarChar(255)
-  phone         String?  @db.VarChar(255)
   user_type     Int?
-  image_profile String?  @db.VarChar(255)
+  is_active     Boolean  @default(true)
   created_at    DateTime @default(now()) @db.Timestamp(0)
+  
+  bookings      bookings[]
+  reviews       reviews[]
+  favorites     favorites[]
+  booking_profile user_booking_profiles?
+}
+
+model user_booking_profiles {
+  user_id Int @id
+
+  first_name String? @db.VarChar(255)
+  last_name  String? @db.VarChar(255)
+  email      String? @db.VarChar(255)
+  phone      String? @db.VarChar(20)
+  id_card    String? @db.VarChar(50)
+
+  current_province       String? @db.VarChar(100)
+  current_district       String? @db.VarChar(100)
+  current_subdistrict    String? @db.VarChar(100)
+  current_zipcode        String? @db.VarChar(10)
+  current_address_detail String? @db.Text
+
+  identity_province       String? @db.VarChar(100)
+  identity_district       String? @db.VarChar(100)
+  identity_subdistrict    String? @db.VarChar(100)
+  identity_zipcode        String? @db.VarChar(10)
+  identity_address_detail String? @db.Text
+
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @updatedAt
+
+  user users @relation(fields: [user_id], references: [user_id])
+}
+
+model categories {
+  category_id   Int      @id @default(autoincrement())
+  name          String   @db.VarChar(100)
+  icon          String?  @db.VarChar(50)
+  description   String?  @db.VarChar(255)
+  
+  tourist_attractions tourist_attractions[]
+}
+
+model tourist_attractions {
+  attraction_id   Int      @id @default(autoincrement())
+  attraction_name String   @db.VarChar(255)
+  location        String?  @db.VarChar(255)
+  district        String?  @db.VarChar(100)
+  subdistrict     String?  @db.VarChar(100)
+  description     String?  @db.Text
+  opening_time    String?  @db.VarChar(100)
+  is_popular      Boolean  @default(false)
+  
+  category_id     Int?
+  
+  map_url         String?  @db.VarChar(500)
+  latitude        Decimal? @db.Decimal(10, 8)
+  longitude       Decimal? @db.Decimal(11, 8)
+  address         String?  @db.Text
+  
+  category        categories?          @relation(fields: [category_id], references: [category_id])
+  tour_packages   tour_packages[]
+  reviews         reviews[]
+  favorites       favorites[]
+  images          attraction_images[]  
+}
+
+model attraction_images {
+  image_id      Int      @id @default(autoincrement())
+  attraction_id Int
+  image_url     String   @db.VarChar(500)
+  caption       String?  @db.VarChar(255)
+  is_cover      Boolean  @default(false)
+  sort_order    Int?     @default(0)
+  created_at    DateTime @default(now())
+  
+  attraction    tourist_attractions @relation(fields: [attraction_id], references: [attraction_id])
+}
+
+model tour_packages {
+  package_id   Int      @id @default(autoincrement())
+  package_name String   @db.VarChar(255)
+  description  String?  @db.Text
+  price        Decimal  @db.Decimal(10, 2)
+  duration     String?  @db.VarChar(100)
+  attraction_id Int
+  
+  attraction   tourist_attractions @relation(fields: [attraction_id], references: [attraction_id])
+  bookings     bookings[]
+  schedules    package_schedules[]
+}
+
+model package_schedules {
+  id           Int      @id @default(autoincrement())
+  package_id   Int
+  date         DateTime @db.Date
+  capacity     Int
+  booked_seats Int      @default(0)
+  created_at   DateTime @default(now()) @db.Timestamp(0)
+  updated_at   DateTime @updatedAt
+
+  package  tour_packages @relation(fields: [package_id], references: [package_id])
+  bookings bookings[]
+
+  @@unique([package_id, date])
+}
+
+model bookings {
+  booking_id    Int      @id @default(autoincrement())
+  user_id       Int
+  package_id    Int
+  schedule_id   Int?
+  booking_date  DateTime @default(now())
+  status        String   @default("PENDING") @db.VarChar(50)
+  booking_status String  @default("PENDING") @db.VarChar(50)
+  people_count  Int      @default(1)
+  total_price   Decimal  @db.Decimal(10, 2)
+  
+  // ข้อมูลส่วนตัวจากหน้าฟอร์ม
+  first_name    String?  @db.VarChar(255)
+  last_name     String?  @db.VarChar(255)
+  email         String?  @db.VarChar(255)
+  phone         String?  @db.VarChar(20)
+  id_card       String?  @db.VarChar(50)
+  
+  // ข้อมูลที่อยู่ (สำหรับเก็บประวัติ)
+  current_address  String? @db.Text
+  identity_address String? @db.Text
+  current_province       String? @db.VarChar(100)
+  current_district       String? @db.VarChar(100)
+  current_subdistrict    String? @db.VarChar(100)
+  current_zipcode        String? @db.VarChar(10)
+  current_address_detail String? @db.Text
+  identity_province       String? @db.VarChar(100)
+  identity_district       String? @db.VarChar(100)
+  identity_subdistrict    String? @db.VarChar(100)
+  identity_zipcode        String? @db.VarChar(10)
+  identity_address_detail String? @db.Text
+
+  user     users         @relation(fields: [user_id], references: [user_id])
+  package  tour_packages @relation(fields: [package_id], references: [package_id])
+  schedule package_schedules? @relation(fields: [schedule_id], references: [id])
+  payments payments[]
+}
+
+model payments {
+  payment_id     Int      @id @default(autoincrement())
+  booking_id     Int
+  payment_method String?  @db.VarChar(50)
+  payment_status String   @default("PENDING") @db.VarChar(50)
+  amount         Decimal? @db.Decimal(10, 2)
+  slip_url       String?  @db.VarChar(500)
+  payment_date   DateTime @default(now())
+  paid_at        DateTime?
+  
+  booking        bookings @relation(fields: [booking_id], references: [booking_id])
+}
+
+model reviews {
+  review_id     Int      @id @default(autoincrement())
+  user_id       Int
+  attraction_id Int
+  rating        Int?     @db.TinyInt
+  comment       String?  @db.Text
+  review_date   DateTime @default(now())
+  
+  user       users               @relation(fields: [user_id], references: [user_id])
+  attraction tourist_attractions @relation(fields: [attraction_id], references: [attraction_id])
+}
+
+model favorites {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  attraction_id Int
+  created_at    DateTime @default(now())
+
+  user       users               @relation(fields: [user_id], references: [user_id])
+  attraction tourist_attractions @relation(fields: [attraction_id], references: [attraction_id])
+
+  @@unique([user_id, attraction_id])
 }

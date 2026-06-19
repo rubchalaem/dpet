@@ -1,58 +1,39 @@
 import { useState } from "react";
-import { Eye, EyeOff, User, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, LucideIcon } from "lucide-react";
 
 interface AuthInputProps {
-  type: "email" | "password" | "text";
+  icon: LucideIcon;
   placeholder: string;
+  type?: string;
   value: string;
-  onChange: (value: string) => void;
-  icon?: "user" | "lock" | "mail";
-  name?: string;
+  onChange: (val: string) => void;
 }
 
-const iconMap = {
-  user: User,
-  lock: Lock,
-  mail: Mail,
-};
-
-export const AuthInput = ({
-  type,
-  placeholder,
-  value,
-  onChange,
-  icon = "user",
-  name,
-}: AuthInputProps) => {
+const AuthInput = ({ icon: Icon, placeholder, type = "text", value, onChange }: AuthInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const Icon = iconMap[icon];
-
-  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
+  const isPassword = type === "password";
 
   return (
-    <div className="auth-input-wrapper">
-      <Icon className="w-5 h-5 text-muted-foreground" />
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-ring/30">
+      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
       <input
-        type={inputType}
+        type={isPassword && showPassword ? "text" : type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        name={name}
-        className="auth-input"
+        className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
       />
-      {type === "password" && (
+      {isPassword && (
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="shrink-0 text-muted-foreground hover:text-foreground"
         >
-          {showPassword ? (
-            <EyeOff className="w-5 h-5" />
-          ) : (
-            <Eye className="w-5 h-5" />
-          )}
+          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </button>
       )}
     </div>
   );
 };
+
+export default AuthInput;

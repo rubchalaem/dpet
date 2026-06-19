@@ -1,56 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @layer base {
   :root {
-    /* Warm neutral palette inspired by Thai travel design */
-    --background: 35 30% 94%;
-    --foreground: 25 10% 15%;
+    /* Light page background — warm off-white */
+    --background: 36 22% 94%;
+    --foreground: 25 40% 12%;
 
+    /* Cards & surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 25 10% 15%;
+    --card-foreground: 25 40% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 10% 15%;
+    --popover-foreground: 25 40% 12%;
 
-    /* Dark brown primary - matches the login button */
-    --primary: 25 15% 28%;
-    --primary-foreground: 0 0% 100%;
+    /* Golden amber — primary action color */
+    --primary: 38 52% 48%;
+    --primary-foreground: 36 22% 97%;
 
-    --secondary: 35 20% 90%;
-    --secondary-foreground: 25 10% 15%;
+    --secondary: 36 20% 88%;
+    --secondary-foreground: 25 40% 12%;
 
-    --muted: 35 15% 88%;
-    --muted-foreground: 25 8% 45%;
+    --muted: 36 15% 90%;
+    --muted-foreground: 25 15% 45%;
 
-    --accent: 35 20% 90%;
-    --accent-foreground: 25 10% 15%;
+    --accent: 38 45% 70%;
+    --accent-foreground: 25 40% 12%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 35 15% 85%;
-    --input: 0 0% 100%;
-    --ring: 25 15% 28%;
+    --border: 36 15% 82%;
+    --input: 36 15% 82%;
+    --ring: 38 52% 48%;
 
     --radius: 0.75rem;
 
-    /* Header gray */
-    --header: 0 0% 78%;
-    --header-foreground: 25 10% 15%;
+    /* Dark chocolate brown — hero, info, location, footer sections */
+    --brown-dark: 22 60% 20%;
+    --brown-dark-foreground: 36 30% 90%;
 
-    /* Footer dark */
-    --footer: 25 8% 35%;
-    --footer-foreground: 35 20% 90%;
+    /* Golden amber section background */
+    --amber-section: 38 52% 60%;
+    --amber-section-foreground: 22 60% 15%;
 
-    /* Stat card colors */
-    --stat-blue: 210 80% 55%;
-    --stat-green: 145 60% 45%;
-    --stat-orange: 30 90% 55%;
-    --stat-purple: 270 60% 55%;
+    /* Dark green — Login button in navbar, Contact Us button */
+    --green-accent: 150 35% 28%;
+    --green-accent-foreground: 140 30% 95%;
+
+    /* Navbar */
+    --navbar-bg: 0 0% 100%;
+
+    /* Footer */
+    --footer-bg: 22 60% 20%;
+    --footer-foreground: 36 30% 90%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -61,51 +67,6 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
-  .dark {
-    --background: 25 15% 10%;
-    --foreground: 35 20% 95%;
-
-    --card: 25 12% 15%;
-    --card-foreground: 35 20% 95%;
-
-    --popover: 25 12% 15%;
-    --popover-foreground: 35 20% 95%;
-
-    --primary: 35 25% 75%;
-    --primary-foreground: 25 15% 10%;
-
-    --secondary: 25 10% 20%;
-    --secondary-foreground: 35 20% 95%;
-
-    --muted: 25 10% 20%;
-    --muted-foreground: 35 15% 60%;
-
-    --accent: 25 10% 20%;
-    --accent-foreground: 35 20% 95%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 35 20% 95%;
-
-    --border: 25 10% 25%;
-    --input: 25 10% 20%;
-    --ring: 35 25% 75%;
-
-    --header: 25 10% 18%;
-    --header-foreground: 35 20% 95%;
-
-    --footer: 25 8% 12%;
-    --footer-foreground: 35 20% 90%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
 }
 
 @layer base {
@@ -114,39 +75,75 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground;
+    font-family: 'Noto Sans Thai', sans-serif;
   }
 }
 
-@layer components {
-  .auth-card {
-    @apply bg-card rounded-2xl shadow-lg p-8 w-full max-w-md;
-  }
-
-  .auth-input-wrapper {
-    @apply flex items-center bg-input border-2 border-border rounded-xl px-4 py-3 gap-3 transition-all duration-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20;
-  }
-
-  .auth-input {
-    @apply flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground;
-  }
-
-  .stat-card {
-    @apply bg-card rounded-2xl shadow-md p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
-  }
-
-  .dashboard-card {
-    @apply bg-card rounded-2xl shadow-md p-6;
-  }
-
-  .social-button {
-    @apply w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 hover:shadow-md;
-  }
+/* Custom green theme manually applied to select sections/pages */
+.bg-custom-green {
+  background-color: #3F6B4A !important;
+  color: #f5f5f4 !important;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.bg-custom-green .text-foreground {
+  color: #f5f5f4 !important;
+}
+
+.bg-custom-green .text-muted-foreground {
+  color: #cbd5e1 !important;
+}
+
+/* Ensure white cards and muted boxes inside bg-custom-green retain their correct dark theme styling */
+.bg-custom-green .bg-card, 
+.bg-custom-green .bg-white,
+.bg-custom-green .bg-muted {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.bg-custom-green .bg-card .text-foreground,
+.bg-custom-green .bg-white .text-foreground,
+.bg-custom-green .bg-muted .text-foreground {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.bg-custom-green .bg-card .text-muted-foreground,
+.bg-custom-green .bg-white .text-muted-foreground,
+.bg-custom-green .bg-muted .text-muted-foreground {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.bg-custom-green input:not([type="checkbox"]):not([type="radio"]),
+.bg-custom-green textarea,
+.bg-custom-green select,
+.bg-custom-green [role="combobox"] {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+}
+
+.bg-custom-green input::placeholder,
+.bg-custom-green textarea::placeholder {
+  color: #a3a3a3 !important;
+}
+
+/* Ensure the main navbar and mobile menu always have dark text, regardless of page background */
+nav,
+.bg-custom-green nav,
+.custom-navbar-mobile,
+.bg-custom-green .custom-navbar-mobile {
+  color: #1a1a1a !important;
+}
+
+nav .text-foreground,
+.bg-custom-green nav .text-foreground,
+.custom-navbar-mobile .text-foreground,
+.bg-custom-green .custom-navbar-mobile .text-foreground {
+  color: #1a1a1a !important;
+}
+
+nav .text-muted-foreground,
+.bg-custom-green nav .text-muted-foreground,
+.custom-navbar-mobile .text-muted-foreground,
+.bg-custom-green .custom-navbar-mobile .text-muted-foreground {
+  color: #737373 !important;
 }

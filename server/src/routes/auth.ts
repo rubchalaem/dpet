@@ -16,10 +16,20 @@ export class AuthRoutes {
     this.router.post(`${this.path}/login`, this.authController.loginUser);
     this.router.post(`${this.path}/register`, this.authController.createUser);
     this.router.post(`${this.path}/refresh`, this.authController.refreshToken);
+    this.router.get(`${this.path}/google`, this.authController.googleLogin);
+    this.router.get(
+      `${this.path}/google/callback`,
+      this.authController.googleCallback
+    );
     this.router.get(
       `${this.path}/me`,
       authenticateToken,
       this.authController.getUserMe
+    );
+    this.router.patch(
+      `${this.path}/me`,
+      authenticateToken,
+      this.authController.updateUserMe
     );
   }
 }

@@ -35,6 +35,7 @@ class App {
     this.app.use(morgan("combined"));
     this.app.use(cors());
     this.app.use(bodyParser.json());
+    this.app.use("/uploads", express.static(path.join(__dirname, "uploads")));
   }
 
 

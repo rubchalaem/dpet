@@ -2,10 +2,12 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
 
 interface CustomJwtPayload extends JwtPayload {
-  user_id: string;
+  id: number;
+  user_id?: string;
   username: string;
   email: string;
-  role: string;
+  user_type?: number;
+  role?: string;
 }
 
 export const authenticateToken = (
@@ -32,4 +34,18 @@ export const authenticateToken = (
       }
     }
   );
+};
+
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = (req as any).user as CustomJwtPayload | undefined;
+
+  if (!user || user.user_type !== 1) {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+
+  next();
 };

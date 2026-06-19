@@ -1,134 +1,159 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthInput } from "@/components/AuthInput";
-import { AuthCard } from "@/components/AuthCard";
-import { AuthButton } from "@/components/AuthButton";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { User, Mail, Lock } from "lucide-react";
+import AuthInput from "@/components/AuthInput";
+import Footer from "@/components/Footer";
+import { api } from "@/lib/api";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [confirm, setConfirm] = useState("");
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    if (!name.trim()) {
-      newErrors.name = "Name is required";
+  const handleRegister = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    alert("กรุณากรอกรูปแบบอีเมลให้ถูกต้อง (เช่น example@mail.com)");
+    setError("รูปแบบอีเมลไม่ถูกต้อง");
+    return; 
+  }
+
+  if (password !== confirm) {
+    alert("รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง");
+    setError("รหัสผ่านไม่ตรงกัน");
+    return; 
+  }
+
+  if (password.length < 6) {
+    alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
+    setError("รหัสผ่านสั้นเกินไป");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await api.post(
+      "/auth/register",
+      { username, email, password },
+      { headers: { 'Content-Type': 'application/json' } } 
+    );
+    
+    alert("สมัครสมาชิกสำเร็จ!");
+    console.log("Register success:", response.data);
+
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
     }
 
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Invalid email format";
-    }
+    navigate("/login");
 
-    if (!password) {
-      newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) {
-      navigate("/login");
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    const errorMessage = err.response?.data?.message || "สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+    setError(errorMessage);
+    alert(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* Top bar */}
+      <div className="border-b border-border bg-card px-4 py-3 shadow-sm">
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="/logo.jpg"
+            alt="Logo"
+            className="h-9 w-9 rounded-full object-cover"
+          />
+          <span className="text-base font-bold text-foreground">
+            Srbr.com
+          </span>
+        </Link>
+      </div>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <AuthCard title="Create Account">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <AuthInput
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={setName}
-                icon="user"
-                name="name"
-              />
-              {errors.name && (
-                <p className="text-destructive text-sm mt-1">{errors.name}</p>
-              )}
-            </div>
+      <div className="flex flex-1 items-center justify-center px-4 py-14">
+        <div className="w-full max-w-md space-y-6">
+          {/* Heading */}
+          <div className="text-center">
+            <h1 className="text-3xl font-extrabold text-foreground">
+              สมัครสมาชิก
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              สร้างบัญชีใหม่เพื่อเริ่มต้นใช้งาน
+            </p>
+          </div>
 
-            <div>
-              <AuthInput
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={setEmail}
-                icon="mail"
-                name="email"
-              />
-              {errors.email && (
-                <p className="text-destructive text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
+          {/* Card */}
+          <form
+            onSubmit={handleRegister}
+            className="rounded-2xl bg-card p-8 shadow-md border border-border space-y-5"
+          >
+            <AuthInput
+              icon={User}
+              placeholder="ชื่อผู้ใช้งาน"
+              value={username}
+              onChange={setUsername}
+            />
 
-            <div>
-              <AuthInput
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={setPassword}
-                icon="lock"
-                name="password"
-              />
-              {errors.password && (
-                <p className="text-destructive text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
+            <AuthInput
+              icon={Mail}
+              placeholder="อีเมล"
+              value={email}
+              onChange={setEmail}
+            />
 
-            <div>
-              <AuthInput
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                icon="lock"
-                name="confirmPassword"
-              />
-              {errors.confirmPassword && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
+            <AuthInput
+              icon={Lock}
+              placeholder="รหัสผ่าน"
+              type="password"
+              value={password}
+              onChange={setPassword}
+            />
 
-            <div className="pt-4">
-              <AuthButton type="submit">Create Account</AuthButton>
-            </div>
+            <AuthInput
+              icon={Lock}
+              placeholder="ยืนยันรหัสผ่าน"
+              type="password"
+              value={confirm}
+              onChange={setConfirm}
+            />
+
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {loading ? "กำลังสมัครสมาชิก..." : "สมัครสมาชิก"}
+            </button>
           </form>
 
-          <div className="text-center mt-8">
-            <span className="text-muted-foreground">Already have an account? </span>
+          <p className="text-center text-sm text-muted-foreground">
+            มีบัญชีอยู่แล้ว?{" "}
             <Link
               to="/login"
-              className="text-foreground font-medium hover:underline"
+              className="font-semibold text-foreground hover:text-primary transition-colors"
             >
-              Login
+              เข้าสู่ระบบ
             </Link>
-          </div>
-        </AuthCard>
-      </main>
+          </p>
+        </div>
+      </div>
 
       <Footer />
     </div>

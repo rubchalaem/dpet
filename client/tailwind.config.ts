@@ -13,9 +13,6 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -50,19 +47,21 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        header: {
-          DEFAULT: "hsl(var(--header))",
-          foreground: "hsl(var(--header-foreground))",
+        brown: {
+          dark: "hsl(var(--brown-dark))",
+          "dark-foreground": "hsl(var(--brown-dark-foreground))",
+        },
+        amber: {
+          section: "hsl(var(--amber-section))",
+          "section-foreground": "hsl(var(--amber-section-foreground))",
+        },
+        green: {
+          accent: "hsl(var(--green-accent))",
+          "accent-foreground": "hsl(var(--green-accent-foreground))",
         },
         footer: {
-          DEFAULT: "hsl(var(--footer))",
+          DEFAULT: "hsl(var(--footer-bg))",
           foreground: "hsl(var(--footer-foreground))",
-        },
-        stat: {
-          blue: "hsl(var(--stat-blue))",
-          green: "hsl(var(--stat-green))",
-          orange: "hsl(var(--stat-orange))",
-          purple: "hsl(var(--stat-purple))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -79,37 +78,28 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xl: "1rem",
-        "2xl": "1.25rem",
-        "3xl": "1.5rem",
-      },
-      boxShadow: {
-        soft: "0 4px 20px -2px rgba(0, 0, 0, 0.08)",
-        card: "0 8px 30px -4px rgba(0, 0, 0, 0.1)",
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        "fade-in": {
-          from: { opacity: "0", transform: "translateY(10px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        "slide-up": {
-          from: { opacity: "0", transform: "translateY(20px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.4s ease-out",
-        "slide-up": "slide-up 0.5s ease-out",
       },
     },
   },
