@@ -937,7 +937,7 @@ const Admin = () => {
                       <div className="flex flex-wrap items-center gap-2">
                         {payment?.slip_url ? (
                           <a
-                            href={`${FILE_BASE_URL}${payment.slip_url}`}
+                            href={getImageUrl(payment.slip_url)}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex h-9 items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-bold hover:bg-muted"

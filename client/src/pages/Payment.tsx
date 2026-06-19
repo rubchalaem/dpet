@@ -4,7 +4,7 @@ import { Building2, CheckCircle2, Clock, QrCode, Upload } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { api, FILE_BASE_URL } from "@/lib/api";
+import { api, FILE_BASE_URL, getImageUrl } from "@/lib/api";
 
 type Booking = {
   booking_id: number;
@@ -132,7 +132,7 @@ const Payment = () => {
               {payment?.slip_url && (
                 <div className="mt-6">
                   <div className="mb-2 flex items-center gap-2 text-sm font-bold"><Clock className="h-4 w-4" />สลิปที่อัปโหลด</div>
-                  <img src={`${FILE_BASE_URL}${payment.slip_url}`} alt="Payment slip" className="max-h-80 rounded-lg border object-contain" />
+                  <img src={getImageUrl(payment.slip_url)} alt="Payment slip" className="max-h-80 rounded-lg border object-contain" />
                 </div>
               )}
 
