@@ -23,7 +23,7 @@ export class PaymentController {
           booking_id,
           user_id,
           payment_method,
-          slip_url: `/uploads/slips/${req.file.filename}`,
+          slip_url: req.file.path,
         });
 
         return res.status(201).json({ message: "Payment slip uploaded", data: payment });

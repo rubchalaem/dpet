@@ -83,7 +83,7 @@ export class AdminController {
         if (!req.file) return res.status(400).json({ message: "Image is required" });
         const image = await this.adminService.addAttractionImage({
           attraction_id: Number(req.params.id),
-          image_url: `/uploads/attractions/${req.file.filename}`,
+          image_url: req.file.path,
           caption: req.body.caption,
           is_cover: req.body.is_cover === "true" || req.body.is_cover === true,
           sort_order: Number(req.body.sort_order || 0),
