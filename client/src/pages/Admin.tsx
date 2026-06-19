@@ -7,6 +7,7 @@ import {
   FileImage,
   MapPin,
   PackagePlus,
+  Plus,
   Trash2,
   TrendingUp,
   Users,
@@ -150,6 +151,7 @@ const Admin = () => {
   const [editingAttraction, setEditingAttraction] = useState<Attraction | null>(
     null,
   );
+
   const [editingPackage, setEditingPackage] = useState<Package | null>(null);
   const [bookingSearch, setBookingSearch] = useState("");
   const [bookingDateSearch, setBookingDateSearch] = useState("");
@@ -158,6 +160,8 @@ const Admin = () => {
     number | null
   >(null);
   const [attractionForm, setAttractionForm] =
+    useState<AttractionForm>(emptyAttractionForm);
+  const [attractionEditForm, setAttractionEditForm] =
     useState<AttractionForm>(emptyAttractionForm);
   const [packageForm, setPackageForm] = useState<PackageForm>({
     package_name: "",
@@ -230,8 +234,6 @@ const Admin = () => {
     );
   }, []);
 
-
-
   // Auto-dismiss warning/info messages after 5 seconds
   useEffect(() => {
     if (!message) return;
@@ -242,24 +244,28 @@ const Admin = () => {
   }, [message]);
 
   const saveAttraction = async () => {
-    if (editingAttraction) {
-      await api.patch(
-        `/admin/attractions/${editingAttraction.attraction_id}`,
-        attractionForm,
-      );
-      setMessage("แก้ไขสถานที่สำเร็จ");
-      setEditingAttraction(null);
-    } else {
-      await api.post("/admin/attractions", attractionForm);
-      setMessage("เพิ่มสถานที่สำเร็จ");
-    }
+    await api.post("/admin/attractions", attractionForm);
+    setMessage("เพิ่มสถานที่สำเร็จ");
     setAttractionForm(emptyAttractionForm);
     loadAll();
   };
 
+  const updateAttraction = async () => {
+    if (editingAttraction) {
+      await api.patch(
+        `/admin/attractions/${editingAttraction.attraction_id}`,
+        attractionEditForm,
+      );
+      setMessage("แก้ไขสถานที่สำเร็จ");
+      setEditingAttraction(null);
+      setAttractionEditForm(emptyAttractionForm);
+      loadAll();
+    }
+  };
+
   const startEditAttraction = (item: Attraction) => {
     setEditingAttraction(item);
-    setAttractionForm({
+    setAttractionEditForm({
       attraction_name: item.attraction_name || "",
       category_id: item.category_id ? String(item.category_id) : "",
       district: item.district || "",
@@ -395,15 +401,17 @@ const Admin = () => {
 
   const deletePackage = async (item: Package) => {
     const bookingCount = item._count?.bookings || 0;
-    
+
     // Check if the package is NOT expired (has schedules today or in the future)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const hasActiveSchedules = item.schedules && item.schedules.some((schedule) => {
-      const sDate = new Date(schedule.date);
-      sDate.setHours(0, 0, 0, 0);
-      return sDate >= today;
-    });
+    const hasActiveSchedules =
+      item.schedules &&
+      item.schedules.some((schedule) => {
+        const sDate = new Date(schedule.date);
+        sDate.setHours(0, 0, 0, 0);
+        return sDate >= today;
+      });
 
     // If it's NOT expired AND has bookings:
     if (hasActiveSchedules && bookingCount > 0) {
@@ -469,7 +477,7 @@ const Admin = () => {
   ) => {
     const scheduleDateISO = scheduleDate ? scheduleDate.slice(0, 10) : "";
     const formattedDate = new Date(scheduleDate).toLocaleDateString("th-TH");
-    
+
     if (bookingCount > 0) {
       setDeleteBlockedModal({
         title: "ลบรอบเดินทางไม่ได้",
@@ -582,8 +590,7 @@ const Admin = () => {
       booking.booking_status === bookingStatusFilter ||
       payment?.payment_status === bookingStatusFilter;
     const matchesDate =
-      !bookingDateSearch ||
-      scheduleDateISO === bookingDateSearch;
+      !bookingDateSearch || scheduleDateISO === bookingDateSearch;
     const haystack = [
       booking.booking_id,
       booking.user?.email,
@@ -609,7 +616,11 @@ const Admin = () => {
   const isFiltered = selectedReportMonth !== "all";
   const displayBookings = isFiltered
     ? bookings.filter((b) => {
-        const d = b.schedule?.date ? new Date(b.schedule.date) : (b.booking_date ? new Date(b.booking_date) : null);
+        const d = b.schedule?.date
+          ? new Date(b.schedule.date)
+          : b.booking_date
+            ? new Date(b.booking_date)
+            : null;
         if (!d) return false;
         const y = d.getFullYear();
         const m = d.getMonth();
@@ -621,14 +632,19 @@ const Admin = () => {
   const displayBookingCount = displayBookings.length;
   const displayConfirmedRevenue = displayBookings.reduce((sum, b) => {
     const payment = b.payments?.[0];
-    if (b.booking_status === "CONFIRMED" || payment?.payment_status === "VERIFIED") {
+    if (
+      b.booking_status === "CONFIRMED" ||
+      payment?.payment_status === "VERIFIED"
+    ) {
       return sum + Number(b.total_price || 0);
     }
     return sum;
   }, 0);
 
   // Group packages for the selected period
-  const packageStats: { [key: number]: { name: string; attraction: string; count: number } } = {};
+  const packageStats: {
+    [key: number]: { name: string; attraction: string; count: number };
+  } = {};
   for (const b of displayBookings) {
     if (!b.package) continue;
     const pkgId = b.package_id || 0;
@@ -651,11 +667,11 @@ const Admin = () => {
         }))
         .sort((a, b) => b.bookings - a.bookings)
         .slice(0, 5)
-    : (report?.topPackages || []);
+    : report?.topPackages || [];
 
   const displayUsersCount = isFiltered
     ? new Set(displayBookings.map((b) => b.user?.email).filter(Boolean)).size
-    : (report?.users || 0);
+    : report?.users || 0;
 
   const getMonthKey = (dateValue?: string) => {
     if (!dateValue) return "";
@@ -778,7 +794,9 @@ const Admin = () => {
                   <SelectItem value="CANCELLED">CANCELLED</SelectItem>
                 </SelectContent>
               </Select>
-              {(bookingSearch || bookingDateSearch || bookingStatusFilter !== "all") && (
+              {(bookingSearch ||
+                bookingDateSearch ||
+                bookingStatusFilter !== "all") && (
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -816,43 +834,65 @@ const Admin = () => {
                           {booking.package?.package_name}
                         </span>
                       </div>
-                      
+
                       <div className="mt-3 grid gap-x-4 gap-y-2 text-sm text-muted-foreground sm:grid-cols-2 md:grid-cols-3">
                         <div>
-                          <span className="font-semibold text-foreground">ผู้จอง:</span> {userLabel}
+                          <span className="font-semibold text-foreground">
+                            ผู้จอง:
+                          </span>{" "}
+                          {userLabel}
                         </div>
                         <div>
-                          <span className="font-semibold text-foreground">อีเมล:</span> {booking.user?.email || "-"}
+                          <span className="font-semibold text-foreground">
+                            อีเมล:
+                          </span>{" "}
+                          {booking.user?.email || "-"}
                         </div>
                         <div>
-                          <span className="font-semibold text-foreground">จำนวน:</span> {booking.people_count} คน
+                          <span className="font-semibold text-foreground">
+                            จำนวน:
+                          </span>{" "}
+                          {booking.people_count} คน
                         </div>
                         <div>
-                          <span className="font-semibold text-foreground">วันที่เดินทาง:</span>{" "}
+                          <span className="font-semibold text-foreground">
+                            วันที่เดินทาง:
+                          </span>{" "}
                           {booking.schedule
-                            ? new Date(booking.schedule.date).toLocaleDateString(
-                                "th-TH",
-                              )
+                            ? new Date(
+                                booking.schedule.date,
+                              ).toLocaleDateString("th-TH")
                             : "-"}
                         </div>
                         <div>
-                          <span className="font-semibold text-foreground">อำเภอ:</span> {booking.current_district || "-"}
+                          <span className="font-semibold text-foreground">
+                            อำเภอ:
+                          </span>{" "}
+                          {booking.current_district || "-"}
                         </div>
                         <div>
-                          <span className="font-semibold text-foreground">ยอดเงินรวม:</span>{" "}
-                          <span className="font-extrabold text-foreground">{Number(booking.total_price).toLocaleString()} บาท</span>
+                          <span className="font-semibold text-foreground">
+                            ยอดเงินรวม:
+                          </span>{" "}
+                          <span className="font-extrabold text-foreground">
+                            {Number(booking.total_price).toLocaleString()} บาท
+                          </span>
                         </div>
                       </div>
 
                       <div className="mt-3 flex items-center gap-2 text-xs">
-                        <span className="font-semibold text-muted-foreground">สถานะการชำระเงิน:</span>
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-bold ${
-                          payment?.payment_status === "VERIFIED"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : payment?.payment_status === "REJECTED"
-                            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                            : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                        }`}>
+                        <span className="font-semibold text-muted-foreground">
+                          สถานะการชำระเงิน:
+                        </span>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-bold ${
+                            payment?.payment_status === "VERIFIED"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                              : payment?.payment_status === "REJECTED"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                          }`}
+                        >
                           {payment?.payment_status || "ยังไม่ชำระ"}
                         </span>
                       </div>
@@ -862,7 +902,9 @@ const Admin = () => {
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
                       {/* Left: Booking Status Selector */}
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">สถานะการจอง:</span>
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          สถานะการจอง:
+                        </span>
                         <div className="w-44">
                           <Select
                             value={booking.booking_status}
@@ -880,8 +922,12 @@ const Admin = () => {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="PENDING">PENDING</SelectItem>
-                              <SelectItem value="CONFIRMED">CONFIRMED</SelectItem>
-                              <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+                              <SelectItem value="CONFIRMED">
+                                CONFIRMED
+                              </SelectItem>
+                              <SelectItem value="CANCELLED">
+                                CANCELLED
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -903,29 +949,32 @@ const Admin = () => {
                             ไม่มีสลิป
                           </span>
                         )}
-                        {payment && (payment.payment_status === "PENDING" || (booking.booking_status === "PENDING" && payment.slip_url)) && (
-                          <>
-                            <Button
-                              size="sm"
-                              className="h-9"
-                              onClick={() =>
-                                updatePayment(payment.payment_id, "verify")
-                              }
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="h-9"
-                              onClick={() =>
-                                updatePayment(payment.payment_id, "reject")
-                              }
-                            >
-                              Reject
-                            </Button>
-                          </>
-                        )}
+                        {payment &&
+                          (payment.payment_status === "PENDING" ||
+                            (booking.booking_status === "PENDING" &&
+                              payment.slip_url)) && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="h-9"
+                                onClick={() =>
+                                  updatePayment(payment.payment_id, "verify")
+                                }
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-9"
+                                onClick={() =>
+                                  updatePayment(payment.payment_id, "reject")
+                                }
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          )}
                         <Button
                           size="sm"
                           variant="destructive"
@@ -945,45 +994,60 @@ const Admin = () => {
 
         {tab === "attractions" && (
           <section className="mt-8 grid gap-6 lg:grid-cols-[360px_1fr]">
-            <div className="rounded-lg bg-card p-5 shadow-sm">
-              <h3 className="flex items-center gap-2 font-bold text-xl mb-4">
-                <FileImage className="h-5 w-5" />
-                อัปโหลดรูปสถานที่
-              </h3>
-              <div className="mt-3 grid gap-3">
-                <Select
-                  value={imageAttractionId}
-                  onValueChange={setImageAttractionId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกสถานที่" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {attractions.map((item) => (
-                      <SelectItem
-                        key={item.attraction_id}
-                        value={String(item.attraction_id)}
-                      >
-                        {item.attraction_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            <div className="space-y-6">
+              <div className="rounded-lg bg-card p-5 shadow-sm">
+                <h3 className="font-bold text-xl mb-4">เพิ่มสถานที่</h3>
+                <AttractionFormView
+                  categories={categories}
+                  form={attractionForm}
+                  setForm={setAttractionForm}
+                  onSubmit={saveAttraction}
+                  submitLabel="บันทึกสถานที่"
                 />
-                <Button
-                  onClick={uploadImage}
-                  disabled={!imageFile || !imageAttractionId}
-                >
-                  อัปโหลดรูป
-                </Button>
+              </div>
+
+              <div className="rounded-lg bg-card p-5 shadow-sm">
+                <h3 className="flex items-center gap-2 font-bold text-xl mb-4">
+                  <FileImage className="h-5 w-5" />
+                  อัปโหลดรูปสถานที่
+                </h3>
+                <div className="mt-3 grid gap-3">
+                  <Select
+                    value={imageAttractionId}
+                    onValueChange={setImageAttractionId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="เลือกสถานที่" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {attractions.map((item) => (
+                        <SelectItem
+                          key={item.attraction_id}
+                          value={String(item.attraction_id)}
+                        >
+                          {item.attraction_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  />
+                  <Button
+                    onClick={uploadImage}
+                    disabled={!imageFile || !imageAttractionId}
+                  >
+                    อัปโหลดรูป
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="rounded-lg bg-card p-5 shadow-sm">
-              <h2 className="text-xl font-bold">สถานที่ทั้งหมด</h2>
+              <h2 className="text-xl font-bold border-b border-border pb-3 mb-4">
+                สถานที่ทั้งหมด
+              </h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 {attractions.map((item) => (
                   <div
@@ -1023,7 +1087,7 @@ const Admin = () => {
             </div>
           </section>
         )}
-{tab === "packages" && (
+        {tab === "packages" && (
           <section className="mt-8 grid gap-6 lg:grid-cols-[380px_1fr]">
             <div className="space-y-6">
               <div className="rounded-lg bg-card p-5 shadow-sm">
@@ -1167,12 +1231,15 @@ const Admin = () => {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);
 
-                  const hasSchedules = item.schedules && item.schedules.length > 0;
-                  const allSchedulesPassed = hasSchedules && item.schedules.every((schedule) => {
-                    const sDate = new Date(schedule.date);
-                    sDate.setHours(0, 0, 0, 0);
-                    return sDate < today;
-                  });
+                  const hasSchedules =
+                    item.schedules && item.schedules.length > 0;
+                  const allSchedulesPassed =
+                    hasSchedules &&
+                    item.schedules.every((schedule) => {
+                      const sDate = new Date(schedule.date);
+                      sDate.setHours(0, 0, 0, 0);
+                      return sDate < today;
+                    });
 
                   return (
                     <div key={item.package_id} className="py-4">
@@ -1260,7 +1327,8 @@ const Admin = () => {
                                 </span>
                                 <span className="font-bold">
                                   {schedule.booked_seats}/{schedule.capacity}{" "}
-                                  ที่นั่ง · {schedule._count?.bookings || 0} booking
+                                  ที่นั่ง · {schedule._count?.bookings || 0}{" "}
+                                  booking
                                 </span>
                                 <Button
                                   variant="destructive"
@@ -1344,8 +1412,13 @@ const Admin = () => {
             {/* Month Filter Selector */}
             <div className="md:col-span-4 flex flex-wrap items-center justify-between gap-4 bg-muted/40 p-5 rounded-xl border border-border">
               <div>
-                <h3 className="font-bold text-lg text-foreground">ช่วงเวลาที่แสดงข้อมูล</h3>
-                <p className="text-sm text-muted-foreground">เลือกช่วงเวลาหรือเดือนย้อนหลัง เพื่อตรวจสอบสถิติและผลประกอบการรายเดือน</p>
+                <h3 className="font-bold text-lg text-foreground">
+                  ช่วงเวลาที่แสดงข้อมูล
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  เลือกช่วงเวลาหรือเดือนย้อนหลัง
+                  เพื่อตรวจสอบสถิติและผลประกอบการรายเดือน
+                </p>
               </div>
               <div className="w-64">
                 <Select
@@ -1385,7 +1458,9 @@ const Admin = () => {
             <div className="rounded-lg bg-card p-5 shadow-sm border border-border flex items-center justify-between bg-gradient-to-br from-amber-500/5 to-amber-600/0">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {isFiltered ? "รายได้ประจำเป็นเดือน" : "รายได้ยืนยันแล้วทั้งหมด"}
+                  {isFiltered
+                    ? "รายได้ประจำเป็นเดือน"
+                    : "รายได้ยืนยันแล้วทั้งหมด"}
                 </div>
                 <div className="mt-2 text-3xl font-extrabold text-amber-600 dark:text-amber-400">
                   {Number(displayConfirmedRevenue).toLocaleString()}
@@ -1412,7 +1487,9 @@ const Admin = () => {
 
             <div className="rounded-lg bg-card p-5 shadow-sm border border-border flex items-center justify-between">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">สถานที่ท่องเที่ยวทั้งหมด</div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  สถานที่ท่องเที่ยวทั้งหมด
+                </div>
                 <div className="mt-2 text-3xl font-extrabold text-foreground">
                   {attractions.length}
                 </div>
@@ -1426,7 +1503,9 @@ const Admin = () => {
             <div className="rounded-lg bg-card p-6 shadow-sm md:col-span-4 border border-border">
               <div className="flex items-center gap-2 border-b border-border pb-4 mb-4">
                 <Calendar className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-bold">รายงานผลประกอบการรายเดือน (Monthly Reports)</h2>
+                <h2 className="text-xl font-bold">
+                  รายงานผลประกอบการรายเดือน (Monthly Reports)
+                </h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -1438,19 +1517,25 @@ const Admin = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {report?.monthlyReports && report.monthlyReports.length > 0 ? (
+                    {report?.monthlyReports &&
+                    report.monthlyReports.length > 0 ? (
                       report.monthlyReports.map((m: any) => {
-                        const isCurrentSelection = selectedReportMonth === m.monthKey;
+                        const isCurrentSelection =
+                          selectedReportMonth === m.monthKey;
                         return (
                           <tr
                             key={m.monthKey}
                             onClick={() => setSelectedReportMonth(m.monthKey)}
                             className={`hover:bg-muted/50 transition-colors cursor-pointer ${
-                              isCurrentSelection ? "bg-primary/5 font-semibold" : ""
+                              isCurrentSelection
+                                ? "bg-primary/5 font-semibold"
+                                : ""
                             }`}
                           >
                             <td className="py-4 px-4 font-bold text-foreground flex items-center gap-2">
-                              {isCurrentSelection && <span className="h-2 w-2 rounded-full bg-primary" />}
+                              {isCurrentSelection && (
+                                <span className="h-2 w-2 rounded-full bg-primary" />
+                              )}
                               {m.monthLabel}
                             </td>
                             <td className="py-4 px-4 text-center font-medium">
@@ -1459,14 +1544,18 @@ const Admin = () => {
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right font-extrabold text-foreground">
-                              {Number(m.confirmedRevenue || 0).toLocaleString()} บาท
+                              {Number(m.confirmedRevenue || 0).toLocaleString()}{" "}
+                              บาท
                             </td>
                           </tr>
                         );
                       })
                     ) : (
                       <tr>
-                        <td colSpan={3} className="py-8 text-center text-muted-foreground">
+                        <td
+                          colSpan={3}
+                          className="py-8 text-center text-muted-foreground"
+                        >
                           ไม่มีข้อมูลการจองรายเดือนในขณะนี้
                         </td>
                       </tr>
@@ -1481,7 +1570,9 @@ const Admin = () => {
               <div className="flex items-center gap-2 border-b border-border pb-4 mb-4">
                 <TrendingUp className="h-5 w-5 text-amber-500" />
                 <h2 className="text-xl font-bold">
-                  {isFiltered ? "แพ็กเกจท่องเที่ยวที่มียอดจองสูงสุดในเดือนนี้" : "แพ็กเกจท่องเที่ยวที่มียอดจองสูงสุดทั้งหมด (Top 5 Packages)"}
+                  {isFiltered
+                    ? "แพ็กเกจท่องเที่ยวที่มียอดจองสูงสุดในเดือนนี้"
+                    : "แพ็กเกจท่องเที่ยวที่มียอดจองสูงสุดทั้งหมด (Top 5 Packages)"}
                 </h2>
               </div>
               {displayTopPackages && displayTopPackages.length > 0 ? (
@@ -1499,12 +1590,17 @@ const Admin = () => {
                         key={item.package_id}
                         className={`relative flex flex-col justify-between rounded-xl border p-4 bg-gradient-to-br ${placeColors[idx % 5]} shadow-sm transition-all hover:scale-[1.02]`}
                       >
-                        <div className={`absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-inner ${
-                          idx === 0 ? "bg-amber-500 text-white" :
-                          idx === 1 ? "bg-slate-400 text-white" :
-                          idx === 2 ? "bg-amber-700 text-white" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
+                        <div
+                          className={`absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-inner ${
+                            idx === 0
+                              ? "bg-amber-500 text-white"
+                              : idx === 1
+                                ? "bg-slate-400 text-white"
+                                : idx === 2
+                                  ? "bg-amber-700 text-white"
+                                  : "bg-muted text-muted-foreground"
+                          }`}
+                        >
                           #{idx + 1}
                         </div>
                         <div>
@@ -1513,13 +1609,20 @@ const Admin = () => {
                           </div>
                           <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                             <MapPin className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{item.attraction_name || "-"}</span>
+                            <span className="truncate">
+                              {item.attraction_name || "-"}
+                            </span>
                           </div>
                         </div>
                         <div className="mt-4 pt-3 border-t border-border/50 flex items-baseline justify-between">
-                          <span className="text-xs text-muted-foreground font-medium">ยอดจองรวม</span>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            ยอดจองรวม
+                          </span>
                           <span className="text-lg font-extrabold text-foreground">
-                            {item.bookings} <span className="text-xs font-bold text-muted-foreground">ครั้ง</span>
+                            {item.bookings}{" "}
+                            <span className="text-xs font-bold text-muted-foreground">
+                              ครั้ง
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -1538,7 +1641,9 @@ const Admin = () => {
               <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-bold">รายการแพ็กเกจทั้งหมด (All Packages)</h2>
+                  <h2 className="text-xl font-bold">
+                    รายการแพ็กเกจทั้งหมด (All Packages)
+                  </h2>
                 </div>
                 <span className="text-xs text-muted-foreground font-semibold bg-muted px-2.5 py-1 rounded-md">
                   ทั้งหมด {allPackagesPopularity.length} แพ็กเกจ
@@ -1550,16 +1655,25 @@ const Admin = () => {
                     <tr className="border-b border-border text-muted-foreground text-sm font-semibold">
                       <th className="py-3 px-4 w-12 text-center">อันดับ</th>
                       <th className="py-3 px-4 min-w-[180px]">ชื่อแพ็กเกจ</th>
-                      <th className="py-3 px-4 min-w-[140px]">สถานที่ท่องเที่ยว</th>
+                      <th className="py-3 px-4 min-w-[140px]">
+                        สถานที่ท่องเที่ยว
+                      </th>
                       <th className="py-3 px-4 min-w-[190px]">รอบเดินทาง</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap min-w-[110px]">ราคา</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap min-w-[120px]">จำนวนการจอง</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap min-w-[110px]">
+                        ราคา
+                      </th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap min-w-[120px]">
+                        จำนวนการจอง
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {allPackagesPopularity.map((pkg, idx) => {
                       return (
-                        <tr key={pkg.package_id} className="hover:bg-muted/50 transition-colors">
+                        <tr
+                          key={pkg.package_id}
+                          className="hover:bg-muted/50 transition-colors"
+                        >
                           <td className="py-4 px-4 text-center font-bold text-muted-foreground">
                             {idx + 1}
                           </td>
@@ -1592,11 +1706,13 @@ const Admin = () => {
                             {Number(pkg.price).toLocaleString()} บาท
                           </td>
                           <td className="py-4 px-4 text-center whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                              pkg.bookings > 0
-                                ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                                : "bg-muted text-muted-foreground"
-                            }`}>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                pkg.bookings > 0
+                                  ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
                               {pkg.bookings} ครั้ง
                             </span>
                           </td>
@@ -1605,7 +1721,10 @@ const Admin = () => {
                     })}
                     {allPackagesPopularity.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                        <td
+                          colSpan={6}
+                          className="py-8 text-center text-muted-foreground"
+                        >
                           ไม่มีแพ็กเกจที่มีรอบเดินทางในเดือนที่เลือก
                         </td>
                       </tr>
@@ -1668,9 +1787,9 @@ const Admin = () => {
           </DialogHeader>
           <AttractionFormView
             categories={categories}
-            form={attractionForm}
-            setForm={setAttractionForm}
-            onSubmit={saveAttraction}
+            form={attractionEditForm}
+            setForm={setAttractionEditForm}
+            onSubmit={updateAttraction}
             submitLabel="บันทึกการแก้ไข"
           />
           {activeEditingAttraction && (
@@ -1726,9 +1845,19 @@ const AttractionFormView = ({
   submitLabel: string;
 }) => {
   const saraburi = thaiAddress.find((item) => item.name === "สระบุรี");
-  const district = saraburi?.districts.find((item) => item.name === form.district);
-  const districtOptions = saraburi?.districts.map((item) => ({ value: item.name, label: item.name })) || [];
-  const subdistrictOptions = district?.subdistricts.map((item) => ({ value: item.name, label: item.name })) || [];
+  const district = saraburi?.districts.find(
+    (item) => item.name === form.district,
+  );
+  const districtOptions =
+    saraburi?.districts.map((item) => ({
+      value: item.name,
+      label: item.name,
+    })) || [];
+  const subdistrictOptions =
+    district?.subdistricts.map((item) => ({
+      value: item.name,
+      label: item.name,
+    })) || [];
 
   return (
     <div className="mt-4 grid gap-3">
@@ -1755,7 +1884,9 @@ const AttractionFormView = ({
       <div className="grid gap-3 md:grid-cols-2">
         <SearchableSelect
           value={form.district}
-          onChange={(value) => setForm({ ...form, district: value, subdistrict: "" })}
+          onChange={(value) =>
+            setForm({ ...form, district: value, subdistrict: "" })
+          }
           placeholder="อำเภอ"
           searchPlaceholder="พิมพ์ค้นหาอำเภอ"
           options={districtOptions}
