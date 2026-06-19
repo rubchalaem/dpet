@@ -187,7 +187,7 @@ const Home = () => {
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:grid-cols-3">
+        <section className="mx-auto grid max-w-6xl gap-4 px-4 py-8 md:grid-cols-3 bg-#3F6B4A">
           {[
             { icon: MapPin, title: "รายละเอียดสถานที่", text: "รูปภาพ เวลาเปิดปิด แผนที่ รีวิว และจำนวน Favorite อยู่ในหน้ารายละเอียดเดียว" },
             { icon: CalendarCheck, title: "จองจากรอบว่างจริง", text: "แพ็กเกจผูกกับ schedule เพื่อดูจำนวนที่นั่งคงเหลือก่อนจอง" },
